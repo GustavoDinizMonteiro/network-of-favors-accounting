@@ -23,7 +23,7 @@ public class AuthorizationController {
 	public static final String AUTH_ENDPOINT = "auth"; 
 	
 	public static final String USER_FEDERATION_ID = "federationUserId"; 
-	public static final String RESOURCE_TYPE = "resrouceType";
+	public static final String RESOURCE_TYPE = "resourceType";
 	public static final String OPERATION = "operation";
 	
 	@RequestMapping(value = "/{federationUserId}/{resourceType}/{operation}", method = RequestMethod.GET)
