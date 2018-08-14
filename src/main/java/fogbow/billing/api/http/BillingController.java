@@ -8,10 +8,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import fogbow.billing.datastore.ComputeUsageEntry;
 import fogbow.billing.services.BillingService;
 
 @Controller
@@ -30,6 +32,16 @@ public class BillingController {
         LOGGER.info("Get billing for federation user <" + federationUserId + "> received.");
         Map<String, Double> userReport = BillingService.getInstance().getUserBilling(federationUserId);
         return new ResponseEntity<Map<String, Double>>(userReport, HttpStatus.OK);
+    }
+	
+	@RequestMapping(method = RequestMethod.POST)
+    public ResponseEntity<Boolean> addEntry(
+            @RequestBody ComputeUsageEntry computeEntry)
+            throws Exception {
+		
+        boolean result = BillingService.getInstance().addComputeEntry(computeEntry);
+        
+        return new ResponseEntity<Boolean>(result, HttpStatus.OK);
     }
 
 }

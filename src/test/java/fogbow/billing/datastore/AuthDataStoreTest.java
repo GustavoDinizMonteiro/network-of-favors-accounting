@@ -36,7 +36,7 @@ public class AuthDataStoreTest {
     
     @After
     public void tearDown() {
-        new File(databaseFile).delete();
+        //new File(databaseFile).delete();
     }
     
     // test case: Adding new user in authDataStore. The addition must be successfully 

@@ -11,6 +11,10 @@ import org.fogbowcloud.manager.core.models.orders.Order;
 import org.fogbowcloud.manager.core.models.orders.OrderState;
 import org.springframework.stereotype.Service;
 
+import fogbow.billing.datastore.AuthDataStore;
+import fogbow.billing.datastore.ComputeUsageEntry;
+import fogbow.billing.datastore.ResourceUsageDataStore;
+
 @Service
 public class BillingService {
 	
@@ -20,7 +24,11 @@ public class BillingService {
 	public static final double CPU_PRICE = 1;
 	public static final double DISK_PRICE = 1;
 	
-	private BillingService() {}
+	private ResourceUsageDataStore resourceUsageDataStore;
+	
+	private BillingService() {
+		resourceUsageDataStore = new ResourceUsageDataStore();
+	}
 
     public static BillingService getInstance() {
         synchronized (ApplicationFacade.class) {
@@ -62,6 +70,10 @@ public class BillingService {
 		userReport.put("TOTAL (R$):", totalPayable);
 		
 		return userReport;
+	}
+	
+	public boolean addComputeEntry(ComputeUsageEntry entry) {
+		return this.resourceUsageDataStore.addUsageEntry(entry);
 	}
 
 }
