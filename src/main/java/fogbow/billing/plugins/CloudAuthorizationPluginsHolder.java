@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.fogbowcloud.manager.core.plugins.PluginFactory;
-import org.fogbowcloud.manager.core.plugins.behavior.authorization.AuthorizationPlugin;
+import org.fogbowcloud.ras.core.PluginFactory;
+import org.fogbowcloud.ras.core.plugins.aaa.authorization.AuthorizationPlugin;
 
 public class CloudAuthorizationPluginsHolder {
 	

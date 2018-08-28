@@ -1,15 +1,13 @@
 package fogbow.billing.datastore;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import fogbow.billing.model.UserUsage;
-import junit.framework.Assert;
 
 public class ResouceUsageDataStoreTest {
 	
@@ -31,7 +29,7 @@ public class ResouceUsageDataStoreTest {
     private static final int UNEXPECTED_AUTHORIZATION = -1;
     
     @Before
-    public void setUp() {
+    public void setUp() throws SQLException {
     	
     	properties = new Properties();
     	properties.setProperty(ResourceUsageDataStore.DATABASE_URL_PROP, databaseURL);
@@ -42,18 +40,6 @@ public class ResouceUsageDataStoreTest {
     @After
     public void tearDown() {
         new File(databaseFile).delete();
-    }
-    
-	@Test
-    public void testAddition() {
-    	this.resourceUsageDataStore.addUsageEntry(entry1);
-    	this.resourceUsageDataStore.addUsageEntry(entry2);
-    	UserUsage usage = this.resourceUsageDataStore.getCPUUsageByUser(entry1.getUserId());
-    	
-    	Assert.assertEquals("id-1", usage.getUserId());
-    	Assert.assertEquals(3.0, usage.getAmount());
-    	Assert.assertEquals(10, usage.getHours());
-    	Assert.assertEquals("vCPU", usage.getResourceName());
     }
 
 }

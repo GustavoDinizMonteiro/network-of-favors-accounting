@@ -4,11 +4,11 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import org.fogbowcloud.manager.core.constants.Operation;
-import org.fogbowcloud.manager.core.models.instances.InstanceType;
-import org.fogbowcloud.manager.core.models.orders.Order;
-import org.fogbowcloud.manager.core.models.tokens.FederationUser;
-import org.fogbowcloud.manager.core.plugins.behavior.authorization.AuthorizationPlugin;
+import org.fogbowcloud.ras.core.constants.Operation;
+import org.fogbowcloud.ras.core.models.ResourceType;
+import org.fogbowcloud.ras.core.models.tokens.FederationUserToken;
+import org.fogbowcloud.ras.core.plugins.aaa.authorization.AuthorizationPlugin;
+
 
 public class ADAuthorizationPlugin implements AuthorizationPlugin {
 	
@@ -19,14 +19,8 @@ public class ADAuthorizationPlugin implements AuthorizationPlugin {
 	}
 
 	@Override
-	public boolean isAuthorized(FederationUser federationUser, Operation operation, Order order) {
-		return true;
-	}
-
-	@Override
-	public boolean isAuthorized(FederationUser federationUser, Operation operation, InstanceType type) {
-		
-		String endpoint = API_URL + AUTH_ENDPOINT + "/" + federationUser.getId() + "/" + type + "/" + operation;
+	public boolean isAuthorized(FederationUserToken federationUserToken, Operation operation, ResourceType type) {
+		String endpoint = API_URL + AUTH_ENDPOINT + "/" + federationUserToken.getUserId() + "/" + type + "/" + operation;
 		StringBuffer content = null;
 		
 		try {
@@ -49,11 +43,6 @@ public class ADAuthorizationPlugin implements AuthorizationPlugin {
 		
 		
 		return Boolean.valueOf(content.toString());
-	}
-
-	@Override
-	public boolean isAuthorized(FederationUser federationUser, Operation operation) {
-		return true;
 	}
 	
 

@@ -30,6 +30,14 @@ public class DataStore {
 		}
 	}
 	
+	protected Connection getConnection(String databaseURL) throws SQLException {
+		try {
+			return DriverManager.getConnection(databaseURL);
+		} catch (SQLException e) {
+			throw e;
+		}
+	}
+	
 	protected void close(Statement statement, Connection conn) {
 		if (statement != null) {
 			try {

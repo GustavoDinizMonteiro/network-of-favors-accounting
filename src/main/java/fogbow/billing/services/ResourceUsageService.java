@@ -1,6 +1,8 @@
 package fogbow.billing.services;
 
-import org.fogbowcloud.manager.core.ApplicationFacade;
+import java.sql.SQLException;
+
+import org.fogbowcloud.ras.core.ApplicationFacade;
 
 import fogbow.billing.datastore.ResourceUsageDataStore;
 
@@ -10,11 +12,11 @@ public class ResourceUsageService {
 	
 	private static ResourceUsageService instance;
 	
-	private ResourceUsageService() {
+	private ResourceUsageService() throws SQLException {
 		this.resourceUsageDataStore = new ResourceUsageDataStore();
 	}
 
-    public static ResourceUsageService getInstance() {
+    public static ResourceUsageService getInstance() throws SQLException {
         synchronized (ApplicationFacade.class) {
             if (instance == null) {
                 instance = new ResourceUsageService();
