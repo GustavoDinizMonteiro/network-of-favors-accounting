@@ -19,6 +19,12 @@ public class SQLCommands extends TimestampTableAttributes{
             + REQUESTING_MEMBER + "," + PROVIDING_MEMBER + "," + START_TIME + "," + DURATION + ")"
             + " VALUES (?,?,?,?,?,?,?,?,?)";
 	
+	public static final String SELECT_ORDERS_BY_USER_SQL = "SELECT * FROM " + TIMESTAMP_TABLE_NAME + 			
+             " WHERE " + FEDERATION_USER_ID + "=?";
+	
+	public static final String SELECT_ORDERS_BY_USER_AND_RESOURCE_TYPE_SQL = "SELECT * FROM " + TIMESTAMP_TABLE_NAME + 			
+            " WHERE " + FEDERATION_USER_ID + "=? AND " + RESOURCE_TYPE + "=?";
+	
 	public static final String SELECT_DURATION_SQL = "SELECT t1.order_id AS order_id, t1.resource_type AS resource_type, t1.usage AS usage, t1.fed_user_id AS fed_user_id, t1.fed_user_name AS fed_user_name, t1.requesting_member AS requesting_member, t1.providing_member AS providing_member, t1.timestamp AS start_time, t2.timestamp - t1.timestamp AS duration FROM (SELECT * FROM timestamp t1 WHERE t1.order_state = 'FULFILLED') t1 LEFT JOIN (SELECT * FROM timestamp t2 WHERE t2.order_state = 'CLOSED') t2 ON t1.order_id = t2.order_id;";
 
 }
