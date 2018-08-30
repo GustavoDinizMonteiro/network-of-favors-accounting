@@ -14,16 +14,22 @@ import org.fogbowcloud.ras.core.models.ResourceType;
 
 import fogbow.billing.datastore.commands.SQLCommands;
 import fogbow.billing.datastore.commands.TimestampTableAttributes;
-import fogbow.billing.model.TimestampTableEntry;
+import fogbow.billing.model.OrderRecord;
 
 public class ResourceUsageDataStore extends DataStore {
 	
 	//TODO Remove it and use properties
 	public static final String USAGE_DATABASE_URL = "jdbc:sqlite:/local/mafra/fogbow/usage_database.sqlite3";
 	
+	//TODO Remove it and use properties
 	public static final String RAS_DATABASE_URL = "jdbc:sqlite:/local/mafra/orderStorageTest.sqlite3";
 	
 	public static final String DATABASE_URL_PROP = "usage_database_url";
+	
+	
+	public static final String RAS_URL_PROP = "ras_database_url";
+	
+	private String ras_database_url;
 	
 
 	public ResourceUsageDataStore() throws SQLException {
@@ -46,29 +52,11 @@ public class ResourceUsageDataStore extends DataStore {
 	}
 	
 	
-	public ResourceUsageDataStore(String databaseURL) throws SQLException {
-		super(databaseURL);
-
-		Statement statement = null;
-		Connection connection = null;
-		try {
-			
-			connection = getConnection();
-			statement = connection.createStatement();
-			statement.execute(SQLCommands.CREATE_TABLE_SQL);
-			
-		} catch (SQLException e) {
-            throw new SQLException(e);
-			
-		} finally {
-			close(statement, connection);
-		}
-	}
-	
-	
 	public ResourceUsageDataStore(Properties properties) throws SQLException {
 		super(properties.getProperty(DATABASE_URL_PROP));
-
+		
+		this.ras_database_url = properties.getProperty(RAS_URL_PROP);
+		
 		Statement statement = null;
 		Connection connection = null;
 		try {
@@ -92,12 +80,12 @@ public class ResourceUsageDataStore extends DataStore {
 
         Connection connection = null;
         
-        List<TimestampTableEntry> listOfEntries = new ArrayList<>();
+        List<OrderRecord> listOfRecords = new ArrayList<>();
         
-        TimestampTableEntry entry;
+        OrderRecord record;
 
         try {
-            connection = getConnection(RAS_DATABASE_URL);
+            connection = getConnection(getRASDatabaseURL());
             connection.setAutoCommit(false);
 
             selectMemberStatement = connection
@@ -116,8 +104,8 @@ public class ResourceUsageDataStore extends DataStore {
                 Timestamp startTime = rs.getTimestamp(TimestampTableAttributes.START_TIME);
                 int duration = rs.getInt(TimestampTableAttributes.DURATION);
                 
-                entry = new TimestampTableEntry(orderId, resourceType, usage, userId, userName, requestingMember, providingMember, startTime, duration);
-                listOfEntries.add(entry);                
+                record = new OrderRecord(orderId, resourceType, usage, userId, userName, requestingMember, providingMember, startTime, duration);
+                listOfRecords.add(record);                
             }
             connection.commit();
 
@@ -135,12 +123,12 @@ public class ResourceUsageDataStore extends DataStore {
             close(selectMemberStatement, connection);
         }
         
-        for (TimestampTableEntry timestampEntry: listOfEntries) {
-        	insertTimestampleTableEntry(timestampEntry);
+        for (OrderRecord orderRecord: listOfRecords) {
+        	insertOrderRecord(orderRecord);
         }
 	}
 	
-	protected void insertTimestampleTableEntry(TimestampTableEntry entry) throws SQLException{
+	protected void insertOrderRecord(OrderRecord orderRecord) throws SQLException{
 		
 		Connection connection = null;
         PreparedStatement orderStatement = null;
@@ -152,15 +140,15 @@ public class ResourceUsageDataStore extends DataStore {
 
             orderStatement = connection.prepareStatement(SQLCommands.INSERT_TIMESTAMP_SQL);
 
-            orderStatement.setString(1, entry.getOrderId());
-            orderStatement.setString(2, entry.getResourceType());
-            orderStatement.setString(3, entry.getUsage());
-            orderStatement.setString(4, entry.getUserId());
-            orderStatement.setString(5, entry.getUserName());
-            orderStatement.setString(6, entry.getRequestingMember());
-            orderStatement.setString(7, entry.getProvidingMember());
-            orderStatement.setTimestamp(8, entry.getStart_time());
-            orderStatement.setInt(9, entry.getDuration());
+            orderStatement.setString(1, orderRecord.getOrderId());
+            orderStatement.setString(2, orderRecord.getResourceType());
+            orderStatement.setString(3, orderRecord.getUsage());
+            orderStatement.setString(4, orderRecord.getUserId());
+            orderStatement.setString(5, orderRecord.getUserName());
+            orderStatement.setString(6, orderRecord.getRequestingMember());
+            orderStatement.setString(7, orderRecord.getProvidingMember());
+            orderStatement.setTimestamp(8, orderRecord.getStart_time());
+            orderStatement.setInt(9, orderRecord.getDuration());
 
             orderStatement.executeUpdate();
 
@@ -181,13 +169,13 @@ public class ResourceUsageDataStore extends DataStore {
 				
 	}
 	
-	public List<TimestampTableEntry> getOrdersByUserId(String userId){
+	public List<OrderRecord> getOrdersByUserId(String userId){
 		PreparedStatement selectMemberStatement = null;
 
         Connection connection = null;
         
-        TimestampTableEntry entry;
-        List<TimestampTableEntry> allOrders = new ArrayList<>();
+        OrderRecord entry;
+        List<OrderRecord> allOrders = new ArrayList<>();
         
         try {
             connection = getConnection();
@@ -210,7 +198,7 @@ public class ResourceUsageDataStore extends DataStore {
                 Timestamp startTime = rs.getTimestamp(TimestampTableAttributes.START_TIME);
                 int duration = rs.getInt(TimestampTableAttributes.DURATION);
                 
-                entry = new TimestampTableEntry(orderId, resourceType, usage, fedUserId, userName, requestingMember, providingMember, startTime, duration);
+                entry = new OrderRecord(orderId, resourceType, usage, fedUserId, userName, requestingMember, providingMember, startTime, duration);
                 allOrders.add(entry);
             }
 
@@ -233,13 +221,13 @@ public class ResourceUsageDataStore extends DataStore {
         return allOrders;
 	}
 	
-	public List<TimestampTableEntry> getOrdersByUserIdAndResourceType(String userId, ResourceType restouceType){
+	public List<OrderRecord> getOrdersByUserIdAndResourceType(String userId, ResourceType resourceType){
 		PreparedStatement selectMemberStatement = null;
 
         Connection connection = null;
         
-        TimestampTableEntry entry;
-        List<TimestampTableEntry> allOrders = new ArrayList<>();
+        OrderRecord entry;
+        List<OrderRecord> allOrders = new ArrayList<>();
         
         try {
             connection = getConnection();
@@ -249,7 +237,7 @@ public class ResourceUsageDataStore extends DataStore {
                     .prepareStatement(SQLCommands.SELECT_ORDERS_BY_USER_AND_RESOURCE_TYPE_SQL);
 
             selectMemberStatement.setString(1, userId);
-            selectMemberStatement.setString(2, String.valueOf(restouceType));
+            selectMemberStatement.setString(2, String.valueOf(resourceType));
 
             ResultSet rs = selectMemberStatement.executeQuery();
             while (rs.next()) {
@@ -263,7 +251,7 @@ public class ResourceUsageDataStore extends DataStore {
                 Timestamp startTime = rs.getTimestamp(TimestampTableAttributes.START_TIME);
                 int duration = rs.getInt(TimestampTableAttributes.DURATION);
                 
-                entry = new TimestampTableEntry(orderId, resource, usage, fedUserId, userName, requestingMember, providingMember, startTime, duration);
+                entry = new OrderRecord(orderId, resource, usage, fedUserId, userName, requestingMember, providingMember, startTime, duration);
                 allOrders.add(entry);
             }
 
@@ -284,6 +272,11 @@ public class ResourceUsageDataStore extends DataStore {
         }
 
         return allOrders;
+	}
+	
+	public String getRASDatabaseURL() {
+		//return RAS_DATABASE_URL;
+		return this.ras_database_url;
 	}
 	
 }

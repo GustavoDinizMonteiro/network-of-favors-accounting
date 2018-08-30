@@ -1,15 +1,21 @@
 package fogbow.billing.model;
 
+import java.sql.Timestamp;
+
 public class Usage {
 
 	private String orderId;
 	private String userId;
-	private long time;
+	private Timestamp begin;
+	private Timestamp end;
+	private long duration;
 	
-	public Usage(String orderId, String userId, long time) {
+	public Usage(String orderId, String userId, Timestamp begin, Timestamp end, long duration) {
 		this.orderId = orderId;
 		this.userId = userId;
-		this.time = time;
+		this.begin = begin;
+		this.end = end;
+		this.duration = duration;
 	}
 
 	public String getOrderId() {
@@ -28,17 +34,25 @@ public class Usage {
 		this.userId = userId;
 	}
 
-	public long getTime() {
-		return time;
+	public long getDuration() {
+		return duration;
 	}
 
-	public void setTime(long time) {
-		this.time = time;
+	public void setDuration(long duration) {
+		this.duration = duration;
+	}
+	
+	public Timestamp getBegin() {
+		return this.begin;
+	}
+	
+	public Timestamp getEnd() {
+		return this.end;
 	}
 	
 	@Override
 	public String toString() {
-		return "Usage [orderId=" + orderId + ", userId=" + userId + ", time=" + time + "]";
+		return "Usage [orderId=" + orderId + ", userId=" + userId + ", time=" + duration + "]";
 	}
 
 }

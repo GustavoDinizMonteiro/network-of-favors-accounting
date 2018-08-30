@@ -28,7 +28,7 @@ public class AuthorizationController {
 	
 	@RequestMapping(value = "/{federationUserId}/{resourceType}/{operation}", method = RequestMethod.GET)
     public ResponseEntity<Boolean> isAuthorizedPrePaid(
-            @PathVariable String federationUserId, String resourceType, String operation)
+            @PathVariable String federationUserId,  @PathVariable String resourceType,  @PathVariable String operation)
             throws Exception {
 		
         LOGGER.info("Get authorization for federation user <" + federationUserId + "> received.");

@@ -1,12 +1,14 @@
 package fogbow.billing.model;
 
+import java.sql.Timestamp;
+
 public class VolumeUsage extends Usage{
 
 	// In GB
 	private int volumeSize;
 	
-	public VolumeUsage(String orderId, String userId, long time, int volumeSize) {
-		super(orderId, userId, time);
+	public VolumeUsage(String orderId, String userId, Timestamp begin, Timestamp end, long duration, int volumeSize) {
+		super(orderId, userId, begin, end, duration);
 		
 		this.volumeSize = volumeSize;
 	}

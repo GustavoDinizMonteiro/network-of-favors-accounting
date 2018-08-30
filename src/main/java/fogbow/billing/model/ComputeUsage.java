@@ -1,5 +1,7 @@
 package fogbow.billing.model;
 
+import java.sql.Timestamp;
+
 public class ComputeUsage extends Usage{
 
 	// In vCPU
@@ -8,8 +10,8 @@ public class ComputeUsage extends Usage{
 	// in GB
 	private int ram;
 	
-	public ComputeUsage(String orderId, String userId, long time, int cpu, int ram) {
-		super(orderId, userId, time);
+	public ComputeUsage(String orderId, String userId, Timestamp begin, Timestamp end, long duration, int cpu, int ram) {
+		super(orderId, userId, begin, end, duration);
 		
 		this.cpu = cpu;
 		this.ram = ram;

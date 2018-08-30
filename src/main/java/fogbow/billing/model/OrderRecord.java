@@ -2,13 +2,13 @@ package fogbow.billing.model;
 
 import java.sql.Timestamp;
 
-public class TimestampTableEntry {
-	
+public class OrderRecord {
+
 	private String orderId, resourceType, usage, userId, userName, requestingMember, providingMember;	
 	private Timestamp start_time;
 	private int duration;
 	
-	public TimestampTableEntry(String orderId, String resourceType, String usage,
+	public OrderRecord(String orderId, String resourceType, String usage,
 			String userId, String userName, String requestingMember, String providingMember,
 			Timestamp startTime, int duration) {
 		
@@ -32,7 +32,7 @@ public class TimestampTableEntry {
 	}
 
 	public String getResourceType() {
-		return resourceType;
+		return resourceType.toUpperCase();
 	}
 
 	public void setResourceType(String resourceType) {
@@ -97,10 +97,35 @@ public class TimestampTableEntry {
 	
 	@Override
 	public String toString() {
-		return "TimestampTableEntry [orderId=" + orderId + ", resourceType=" + resourceType + ", usage=" + usage
+		return "OrderRecord [orderId=" + orderId + ", resourceType=" + resourceType + ", usage=" + usage
 				+ ", userId=" + userId + ", userName=" + userName + ", requestingMember=" + requestingMember
 				+ ", providingMember=" + providingMember + ", start_time=" + start_time + ", duration=" + duration
 				+ "]";
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((orderId == null) ? 0 : orderId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		OrderRecord other = (OrderRecord) obj;
+		if (orderId == null) {
+			if (other.orderId != null)
+				return false;
+		} else if (!orderId.equals(other.orderId))
+			return false;
+		return true;
 	}
 	
 	
