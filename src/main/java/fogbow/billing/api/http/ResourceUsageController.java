@@ -29,7 +29,6 @@ public class ResourceUsageController {
             @PathVariable String finalDate)
             throws Exception {
 		
-		System.out.println("Entrei");
         List<Usage> listOfUsage = ResourceUsageService.getInstance().getUsage(userId, 
         		requestingMember, providingMember, resourceType, initialDate, finalDate);
 
