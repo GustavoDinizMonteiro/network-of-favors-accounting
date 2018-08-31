@@ -95,7 +95,7 @@ public class ResourceUsageDataStore extends DataStore {
             while (rs.next()) {
                 String orderId = rs.getString(TimestampTableAttributes.ORDER_ID);
                 String resourceType = rs.getString(TimestampTableAttributes.RESOURCE_TYPE);
-                String usage = rs.getString(TimestampTableAttributes.USAGE);
+                String spec = rs.getString(TimestampTableAttributes.SPEC);
                 String userId = rs.getString(TimestampTableAttributes.FEDERATION_USER_ID);
                 String userName = rs.getString(TimestampTableAttributes.FEDERATION_USER_NAME);
                 String requestingMember = rs.getString(TimestampTableAttributes.REQUESTING_MEMBER);
@@ -109,7 +109,7 @@ public class ResourceUsageDataStore extends DataStore {
                 	duration = ORDER_NOT_CLOSED_FLAG;
                 }
                 
-                record = new OrderRecord(orderId, resourceType, usage, userId, userName, requestingMember, providingMember, startTime, duration);
+                record = new OrderRecord(orderId, resourceType, spec, userId, userName, requestingMember, providingMember, startTime, duration);
                 listOfRecords.add(record);                
             }
             connection.commit();
@@ -199,12 +199,12 @@ public class ResourceUsageDataStore extends DataStore {
             
             while (rs.next()) {
             	String orderId = rs.getString(TimestampTableAttributes.ORDER_ID);
-                String usage = rs.getString(TimestampTableAttributes.USAGE);
+                String spec = rs.getString(TimestampTableAttributes.SPEC);
                 String userName = rs.getString(TimestampTableAttributes.FEDERATION_USER_NAME);
                 Timestamp startTime = rs.getTimestamp(TimestampTableAttributes.START_TIME);
                 int duration = rs.getInt(TimestampTableAttributes.DURATION);
                 
-                entry = new OrderRecord(orderId, resourceType, usage, userId, userName, requestingMember, providingMember, startTime, duration);
+                entry = new OrderRecord(orderId, resourceType, spec, userId, userName, requestingMember, providingMember, startTime, duration);
                 allOrders.add(entry);
             }
 
@@ -231,5 +231,7 @@ public class ResourceUsageDataStore extends DataStore {
 		//return RAS_DATABASE_URL;
 		return this.ras_database_url;
 	}
+	
+	
 	
 }

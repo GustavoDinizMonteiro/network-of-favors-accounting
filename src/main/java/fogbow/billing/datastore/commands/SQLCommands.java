@@ -5,7 +5,7 @@ public class SQLCommands extends TimestampTableAttributes{
 	public static final String CREATE_TABLE_SQL = "CREATE TABLE IF NOT EXISTS " + TIMESTAMP_TABLE_NAME
             + "(" + ORDER_ID + " VARCHAR(255), " 
             + RESOURCE_TYPE + " VARCHAR(255), "
-            + USAGE + " VARCHAR(255), "
+            + SPEC + " VARCHAR(255), "
     		+ FEDERATION_USER_ID + " VARCHAR(255), " 
             + FEDERATION_USER_NAME + " VARCHAR(255), " 
     		+ REQUESTING_MEMBER + " VARCHAR(255), "
@@ -14,7 +14,7 @@ public class SQLCommands extends TimestampTableAttributes{
     		+ DURATION + " INTEGER, PRIMARY KEY (" + ORDER_ID + "))";
 	
 	public static final String INSERT_TIMESTAMP_SQL = "INSERT INTO " + TIMESTAMP_TABLE_NAME
-            + " (" + ORDER_ID + "," + RESOURCE_TYPE + "," + USAGE + ","
+            + " (" + ORDER_ID + "," + RESOURCE_TYPE + "," + SPEC + ","
     		+ FEDERATION_USER_ID + "," + FEDERATION_USER_NAME + ","
             + REQUESTING_MEMBER + "," + PROVIDING_MEMBER + "," + START_TIME + "," + DURATION + ")"
             + " VALUES (?,?,?,?,?,?,?,?,?)";

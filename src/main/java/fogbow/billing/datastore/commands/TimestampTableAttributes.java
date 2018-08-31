@@ -4,7 +4,7 @@ public class TimestampTableAttributes {
     /**
      * Timestamp table attributes
      */
-    public static final String TIMESTAMP_TABLE_NAME = "order_history";
+    public static final String TIMESTAMP_TABLE_NAME = "usage";
     public static final String START_TIME = "start_time";
     public static final String DURATION = "duration";
     public static final String ORDER_ID = "order_id";
@@ -14,5 +14,6 @@ public class TimestampTableAttributes {
     public static final String REQUESTING_MEMBER = "requesting_member";
     public static final String PROVIDING_MEMBER = "providing_member";
     public static final String RESOURCE_TYPE = "resource_type";
-    public static final String USAGE = "usage";
+    public static final String SPEC = "spec";
+    
 }
