@@ -22,6 +22,12 @@ public class SQLCommands extends TimestampTableAttributes{
 	public static final String SELECT_ORDERS_BY_USER_SQL = "SELECT * FROM " + TIMESTAMP_TABLE_NAME + 			
              " WHERE " + FEDERATION_USER_ID + "=?";
 	
+	public static final String SELECT_ORDERS_SQL = "SELECT * FROM " + TIMESTAMP_TABLE_NAME + 			
+            " WHERE " + FEDERATION_USER_ID + "=? AND "
+            + REQUESTING_MEMBER + "=? AND "
+            + PROVIDING_MEMBER + "=? AND "
+            + RESOURCE_TYPE + "=?";
+	
 	public static final String SELECT_ORDERS_BY_USER_AND_RESOURCE_TYPE_SQL = "SELECT * FROM " + TIMESTAMP_TABLE_NAME + 			
             " WHERE " + FEDERATION_USER_ID + "=? AND " + RESOURCE_TYPE + "=?";
 	

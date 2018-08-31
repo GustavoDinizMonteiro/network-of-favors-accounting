@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.fogbowcloud.ras.core.models.ResourceType;
-
 import fogbow.billing.datastore.commands.SQLCommands;
 import fogbow.billing.datastore.commands.TimestampTableAttributes;
 import fogbow.billing.model.OrderRecord;
@@ -25,9 +23,10 @@ public class ResourceUsageDataStore extends DataStore {
 	public static final String RAS_DATABASE_URL = "jdbc:sqlite:/local/mafra/orderStorageTest.sqlite3";
 	
 	public static final String DATABASE_URL_PROP = "usage_database_url";
-	
-	
+		
 	public static final String RAS_URL_PROP = "ras_database_url";
+	
+	public static final int ORDER_NOT_CLOSED_FLAG = -1;
 	
 	private String ras_database_url;
 	
@@ -102,7 +101,13 @@ public class ResourceUsageDataStore extends DataStore {
                 String requestingMember = rs.getString(TimestampTableAttributes.REQUESTING_MEMBER);
                 String providingMember = rs.getString(TimestampTableAttributes.PROVIDING_MEMBER);
                 Timestamp startTime = rs.getTimestamp(TimestampTableAttributes.START_TIME);
+                
                 int duration = rs.getInt(TimestampTableAttributes.DURATION);
+                
+                // if duration is null in RAS database, the value of duration in new database is -1.
+                if (rs.wasNull()) {
+                	duration = ORDER_NOT_CLOSED_FLAG;
+                }
                 
                 record = new OrderRecord(orderId, resourceType, usage, userId, userName, requestingMember, providingMember, startTime, duration);
                 listOfRecords.add(record);                
@@ -142,7 +147,7 @@ public class ResourceUsageDataStore extends DataStore {
 
             orderStatement.setString(1, orderRecord.getOrderId());
             orderStatement.setString(2, orderRecord.getResourceType());
-            orderStatement.setString(3, orderRecord.getUsage());
+            orderStatement.setString(3, orderRecord.getSpec());
             orderStatement.setString(4, orderRecord.getUserId());
             orderStatement.setString(5, orderRecord.getUserName());
             orderStatement.setString(6, orderRecord.getRequestingMember());
@@ -169,7 +174,8 @@ public class ResourceUsageDataStore extends DataStore {
 				
 	}
 	
-	public List<OrderRecord> getOrdersByUserId(String userId){
+	public List<OrderRecord> getOrders(String userId, String requestingMember, String providingMember,
+			String resourceType){
 		PreparedStatement selectMemberStatement = null;
 
         Connection connection = null;
@@ -180,31 +186,32 @@ public class ResourceUsageDataStore extends DataStore {
         try {
             connection = getConnection();
             connection.setAutoCommit(false);
-
+            
             selectMemberStatement = connection
-                    .prepareStatement(SQLCommands.SELECT_ORDERS_BY_USER_SQL);
-
+                    .prepareStatement(SQLCommands.SELECT_ORDERS_SQL);
+            
             selectMemberStatement.setString(1, userId);
+            selectMemberStatement.setString(2, requestingMember);
+            selectMemberStatement.setString(3, providingMember);
+            selectMemberStatement.setString(4, resourceType.toUpperCase());
 
             ResultSet rs = selectMemberStatement.executeQuery();
+            
             while (rs.next()) {
             	String orderId = rs.getString(TimestampTableAttributes.ORDER_ID);
-                String resourceType = rs.getString(TimestampTableAttributes.RESOURCE_TYPE);
                 String usage = rs.getString(TimestampTableAttributes.USAGE);
-                String fedUserId = rs.getString(TimestampTableAttributes.FEDERATION_USER_ID);
                 String userName = rs.getString(TimestampTableAttributes.FEDERATION_USER_NAME);
-                String requestingMember = rs.getString(TimestampTableAttributes.REQUESTING_MEMBER);
-                String providingMember = rs.getString(TimestampTableAttributes.PROVIDING_MEMBER);
                 Timestamp startTime = rs.getTimestamp(TimestampTableAttributes.START_TIME);
                 int duration = rs.getInt(TimestampTableAttributes.DURATION);
                 
-                entry = new OrderRecord(orderId, resourceType, usage, fedUserId, userName, requestingMember, providingMember, startTime, duration);
+                entry = new OrderRecord(orderId, resourceType, usage, userId, userName, requestingMember, providingMember, startTime, duration);
                 allOrders.add(entry);
             }
 
             connection.commit();
 
         } catch (SQLException e) {
+        	
             try {
                 if (connection != null) {
                     connection.rollback();
@@ -213,60 +220,6 @@ public class ResourceUsageDataStore extends DataStore {
                 e1.printStackTrace();
                 System.out.println("Couldn't rollback transaction.");
             }
-
-        } finally {
-            close(selectMemberStatement, connection);
-        }
-
-        return allOrders;
-	}
-	
-	public List<OrderRecord> getOrdersByUserIdAndResourceType(String userId, ResourceType resourceType){
-		PreparedStatement selectMemberStatement = null;
-
-        Connection connection = null;
-        
-        OrderRecord entry;
-        List<OrderRecord> allOrders = new ArrayList<>();
-        
-        try {
-            connection = getConnection();
-            connection.setAutoCommit(false);
-
-            selectMemberStatement = connection
-                    .prepareStatement(SQLCommands.SELECT_ORDERS_BY_USER_AND_RESOURCE_TYPE_SQL);
-
-            selectMemberStatement.setString(1, userId);
-            selectMemberStatement.setString(2, String.valueOf(resourceType));
-
-            ResultSet rs = selectMemberStatement.executeQuery();
-            while (rs.next()) {
-            	String orderId = rs.getString(TimestampTableAttributes.ORDER_ID);
-                String resource = rs.getString(TimestampTableAttributes.RESOURCE_TYPE);
-                String usage = rs.getString(TimestampTableAttributes.USAGE);
-                String fedUserId = rs.getString(TimestampTableAttributes.FEDERATION_USER_ID);
-                String userName = rs.getString(TimestampTableAttributes.FEDERATION_USER_NAME);
-                String requestingMember = rs.getString(TimestampTableAttributes.REQUESTING_MEMBER);
-                String providingMember = rs.getString(TimestampTableAttributes.PROVIDING_MEMBER);
-                Timestamp startTime = rs.getTimestamp(TimestampTableAttributes.START_TIME);
-                int duration = rs.getInt(TimestampTableAttributes.DURATION);
-                
-                entry = new OrderRecord(orderId, resource, usage, fedUserId, userName, requestingMember, providingMember, startTime, duration);
-                allOrders.add(entry);
-            }
-
-            connection.commit();
-
-        } catch (SQLException e) {
-            try {
-                if (connection != null) {
-                    connection.rollback();
-                }
-            } catch (SQLException e1) {
-                e1.printStackTrace();
-                System.out.println("Couldn't rollback transaction.");
-            }
-
         } finally {
             close(selectMemberStatement, connection);
         }

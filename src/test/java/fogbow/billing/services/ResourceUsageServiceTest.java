@@ -4,21 +4,17 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.fogbowcloud.ras.core.exceptions.UnexpectedException;
-import org.fogbowcloud.ras.core.models.ResourceType;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import fogbow.billing.datastore.ResourceUsageDataStore;
-import fogbow.billing.model.ComputeUsage;
 import fogbow.billing.model.OrderRecord;
 import fogbow.billing.model.Usage;
-import fogbow.billing.model.VolumeUsage;
 import fogbow.billing.services.ResourceUsageService;
 
 
@@ -29,15 +25,10 @@ public class ResourceUsageServiceTest {
 	private static final String FAKE_USER_NAME = "fake-user-name";
 	private static final String FAKE_REQUESTING_MEMBER = "fake-requesting-member";
 	private static final String FAKE_PROVIDING_MEMBER = "fake-providing-member";
-	private static final String COMPUTE_RESOURCE = "compute";
-	private static final String VOLUME_RESOURCE = "volume";
-	private static final String NOT_ACCOUNTED_RESOURCE = "unknown resource";
+	private static final String COMPUTE_RESOURCE = "COMPUTE";
 	
 	// It represents 2 vCPU and 4 GB RAM
-	private static final String COMPUTE_USAGE = "2/4";
-    
-	// It represents 100 GB
-	private static final String VOLUME_USAGE = "100";
+	private static final String COMPUTE_SPEC = "2/4";
 	
 	private static final String pattern = "yyyy-MM-dd";
 	private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
@@ -68,7 +59,7 @@ public class ResourceUsageServiceTest {
 		int duration = 1800000;
 		
 		OrderRecord entry = new OrderRecord(FAKE_ORDER_ID, COMPUTE_RESOURCE, 
-				COMPUTE_USAGE, FAKE_USER_ID, FAKE_USER_NAME, FAKE_REQUESTING_MEMBER, 
+				COMPUTE_SPEC, FAKE_USER_ID, FAKE_USER_NAME, FAKE_REQUESTING_MEMBER, 
 				FAKE_PROVIDING_MEMBER, startTime, duration);
 		
 		// begin interested time: 30/07/2018 00:00:00 
@@ -98,7 +89,7 @@ public class ResourceUsageServiceTest {
 		int duration = 1800000;
 		
 		OrderRecord entry = new OrderRecord(FAKE_ORDER_ID, COMPUTE_RESOURCE, 
-				COMPUTE_USAGE, FAKE_USER_ID, FAKE_USER_NAME, FAKE_REQUESTING_MEMBER, 
+				COMPUTE_SPEC, FAKE_USER_ID, FAKE_USER_NAME, FAKE_REQUESTING_MEMBER, 
 				FAKE_PROVIDING_MEMBER, startTime, duration);
 		
 		// begin interested time: 01/08/2018 00:00:00
@@ -129,7 +120,7 @@ public class ResourceUsageServiceTest {
 		int duration = 1800000;
 		
 		OrderRecord entry = new OrderRecord(FAKE_ORDER_ID, COMPUTE_RESOURCE, 
-				COMPUTE_USAGE, FAKE_USER_ID, FAKE_USER_NAME, FAKE_REQUESTING_MEMBER, 
+				COMPUTE_SPEC, FAKE_USER_ID, FAKE_USER_NAME, FAKE_REQUESTING_MEMBER, 
 				FAKE_PROVIDING_MEMBER, startTime, duration);
 		
 		// begin interested time: 01/08/2018 00:15:00
@@ -144,7 +135,7 @@ public class ResourceUsageServiceTest {
 		// exercise	
 		long realDuration = resourceUsageService.getRealDuration(entry, begin, end);
 
-		// verify. The interested period is 5 min between the start and the finish of order, to 5 min is the duration
+		// verify. The interested period is 5 min between the start and the finish of order, so 5 min is the duration
 		Assert.assertEquals(expectedDuration, realDuration);
 			
 	}
@@ -162,7 +153,7 @@ public class ResourceUsageServiceTest {
 		int duration = 1800000;
 		
 		OrderRecord entry = new OrderRecord(FAKE_ORDER_ID, COMPUTE_RESOURCE, 
-				COMPUTE_USAGE, FAKE_USER_ID, FAKE_USER_NAME, FAKE_REQUESTING_MEMBER, 
+				COMPUTE_SPEC, FAKE_USER_ID, FAKE_USER_NAME, FAKE_REQUESTING_MEMBER, 
 				FAKE_PROVIDING_MEMBER, startTime, duration);
 		
 		// begin interested time: 31/07/2018 23:50:00
@@ -196,7 +187,7 @@ public class ResourceUsageServiceTest {
 		int duration = 1800000;
 		
 		OrderRecord entry = new OrderRecord(FAKE_ORDER_ID, COMPUTE_RESOURCE, 
-				COMPUTE_USAGE, FAKE_USER_ID, FAKE_USER_NAME, FAKE_REQUESTING_MEMBER, 
+				COMPUTE_SPEC, FAKE_USER_ID, FAKE_USER_NAME, FAKE_REQUESTING_MEMBER, 
 				FAKE_PROVIDING_MEMBER, startTime, duration);
 		
 		// begin interested time: 01/08/2018 00:20:00 
@@ -232,7 +223,7 @@ public class ResourceUsageServiceTest {
 		int duration = 1800000;
 		
 		OrderRecord entry = new OrderRecord(FAKE_ORDER_ID, COMPUTE_RESOURCE, 
-				COMPUTE_USAGE, FAKE_USER_ID, FAKE_USER_NAME, FAKE_REQUESTING_MEMBER, 
+				COMPUTE_SPEC, FAKE_USER_ID, FAKE_USER_NAME, FAKE_REQUESTING_MEMBER, 
 				FAKE_PROVIDING_MEMBER, startTime, duration);
 		
 		// begin interested time: 31/07/2018 23:50:00
@@ -265,7 +256,7 @@ public class ResourceUsageServiceTest {
 		int duration = 1800000;
 		
 		OrderRecord entry = new OrderRecord(FAKE_ORDER_ID, COMPUTE_RESOURCE, 
-				COMPUTE_USAGE, FAKE_USER_ID, FAKE_USER_NAME, FAKE_REQUESTING_MEMBER, 
+				COMPUTE_SPEC, FAKE_USER_ID, FAKE_USER_NAME, FAKE_REQUESTING_MEMBER, 
 				FAKE_PROVIDING_MEMBER, startTime, duration);
 		
 		// begin interested time: 01/08/2018 00:30:00
@@ -287,105 +278,36 @@ public class ResourceUsageServiceTest {
 	}
 	
 	@Test
-	public void testVolumeUsage() throws ParseException {
+	public void testRealDurationWhenOrderIsNotClosed() {
+		
+		// set up
 		
 		// Start time of order: 01/08/2018 00:00:00
 		Timestamp startTime = new Timestamp(new Long("1533092400000"));
 		
-		// duration: 2 days. So, the end time of order is: 03/08/2018 00:00:00
-		int duration = 172800000;
-				
-		// begin interested time: 01/08/2018 00:00:00 
-		//Timestamp begin = new Timestamp(new Long("1533092400000"));
-		String begin = "2018-08-01";
-				
-		// end interested time: 04/08/2018 00:00:00 
-		//Timestamp end = new Timestamp(new Long("1533095400000"));
-		String end = "2018-08-04";
+		// duration: order not closed
+		int duration = ResourceUsageDataStore.ORDER_NOT_CLOSED_FLAG;
 		
-		// set up
-		OrderRecord volumeOrderRecord1 = new OrderRecord(FAKE_ORDER_ID, VOLUME_RESOURCE, VOLUME_USAGE,
-				FAKE_USER_ID, FAKE_USER_NAME, FAKE_REQUESTING_MEMBER,
+		OrderRecord entry = new OrderRecord(FAKE_ORDER_ID, COMPUTE_RESOURCE, 
+				COMPUTE_SPEC, FAKE_USER_ID, FAKE_USER_NAME, FAKE_REQUESTING_MEMBER, 
 				FAKE_PROVIDING_MEMBER, startTime, duration);
 		
-		List<OrderRecord> volumeOrderRecords = new ArrayList<>();
-		volumeOrderRecords.add(volumeOrderRecord1);
+		// begin interested time: 01/08/2018 00:00:00
+		Timestamp begin = new Timestamp(new Long("1533092400000"));
 		
-
-		Mockito.when(resourceUsageDataStore.getOrdersByUserIdAndResourceType(FAKE_USER_ID, ResourceType.VOLUME)).thenReturn(volumeOrderRecords);
-		
-		
-		// exercise
-		List<VolumeUsage> usageResult = resourceUsageService.getUserVolumeUsage(FAKE_USER_ID, begin, end);
-		
-		
-		// verify
-		Assert.assertEquals(1, usageResult.size());
-		
-		//2 days
-		long expectedDuration = 172800000;
-		int expectedVolumeSize = 100;
-		
-		VolumeUsage usage = usageResult.get(0);
-		Assert.assertEquals(FAKE_ORDER_ID, usage.getOrderId());
-		Assert.assertEquals(FAKE_USER_ID, usage.getUserId());
-		Assert.assertEquals(simpleDateFormat.parse(begin).getTime(), usage.getBegin().getTime());
-		Assert.assertEquals(simpleDateFormat.parse(end).getTime(), usage.getEnd().getTime());
-		Assert.assertEquals(expectedDuration, usage.getDuration());
-		Assert.assertEquals(expectedVolumeSize, usage.getVolumeSize());
-		
-	}
+		// end interested time: 01/08/2018 00:50:00
+		Timestamp end = new Timestamp(new Long("1533095400000"));
 	
-	@Test
-	public void testComputeUsage() throws ParseException {
 		
-		// Start time of order: 01/08/2018 00:00:00
-		Timestamp startTime = new Timestamp(new Long("1533092400000"));
+		// interest period is 50 min (00:00 to 00:50).
+		long expectedDuration = 3000000;
 		
-		// duration: 2 days. So, the end time of order is: 03/08/2018 00:00:00
-		int duration = 172800000;
-				
-		// begin interested time: 01/08/2018 00:00:00 
-		//Timestamp begin = new Timestamp(new Long("1533092400000"));
-		String begin = "2018-08-01";
-		
-		// end interested time: 04/08/2018 00:00:00 
-		//Timestamp end = new Timestamp(new Long("1533095400000"));
-		String end = "2018-08-04";
-		
-		// set up
-		OrderRecord computeOrderRecord1 = new OrderRecord(FAKE_ORDER_ID, COMPUTE_RESOURCE, COMPUTE_USAGE,
-				FAKE_USER_ID, FAKE_USER_NAME, FAKE_REQUESTING_MEMBER,
-				FAKE_PROVIDING_MEMBER, startTime, duration);
-		
-		List<OrderRecord> computeOrderRecords = new ArrayList<>();
-		computeOrderRecords.add(computeOrderRecord1);
-		
+		// exercise	
+		long realDuration = resourceUsageService.getRealDuration(entry, begin, end);
 
-		Mockito.when(resourceUsageDataStore.getOrdersByUserIdAndResourceType(FAKE_USER_ID, ResourceType.COMPUTE)).thenReturn(computeOrderRecords);
-		
-		
-		// execise
-		List<ComputeUsage> usageResult = resourceUsageService.getUserComputeUsage(FAKE_USER_ID, begin, end);
-		
-		
 		// verify
-		Assert.assertEquals(1, usageResult.size());
-		
-		//30 min
-		long expectedDuration = 172800000;
-		int expectedCPU = 2;
-		int expectedRAM = 4;
-		
-		ComputeUsage usage = usageResult.get(0);
-		Assert.assertEquals(FAKE_ORDER_ID, usage.getOrderId());
-		Assert.assertEquals(FAKE_USER_ID, usage.getUserId());
-		Assert.assertEquals(simpleDateFormat.parse(begin).getTime(), usage.getBegin().getTime());
-		Assert.assertEquals(simpleDateFormat.parse(end).getTime(), usage.getEnd().getTime());
-		Assert.assertEquals(expectedDuration, usage.getDuration());
-		Assert.assertEquals(expectedCPU, usage.getCpu());
-		Assert.assertEquals(expectedRAM, usage.getRam());
-		
+		Assert.assertEquals(expectedDuration, realDuration);
+			
 	}
 	
 	// test case: Test get usage of all type of resources
@@ -401,97 +323,70 @@ public class ResourceUsageServiceTest {
 		int duration = 172800000;
 						
 		// begin interested time: 01/08/2018 00:00:00 
-		//Timestamp begin = new Timestamp(new Long("1533092400000"));
 		String begin = "2018-08-01";
 		
 		// end interested time: 04/08/2018 00:00:00 
-		//Timestamp end = new Timestamp(new Long("1533095400000"));
 		String end = "2018-08-04";
 		
 		// set up
-		OrderRecord computeOrderRecord1 = new OrderRecord(FAKE_ORDER_ID, COMPUTE_RESOURCE, COMPUTE_USAGE,
-						FAKE_USER_ID, FAKE_USER_NAME, FAKE_REQUESTING_MEMBER,
-						FAKE_PROVIDING_MEMBER, startTime, duration);
-				
-
-				
-		OrderRecord volumeOrderRecord1 = new OrderRecord(FAKE_ORDER_ID, VOLUME_RESOURCE, VOLUME_USAGE,
+		OrderRecord computeOrderRecord1 = new OrderRecord(FAKE_ORDER_ID, COMPUTE_RESOURCE, COMPUTE_SPEC,
 						FAKE_USER_ID, FAKE_USER_NAME, FAKE_REQUESTING_MEMBER,
 						FAKE_PROVIDING_MEMBER, startTime, duration);
 		
 		List<OrderRecord> orderRecords = new ArrayList<>();
 		orderRecords.add(computeOrderRecord1);
-		orderRecords.add(volumeOrderRecord1);
 		
-		Mockito.when(resourceUsageDataStore.getOrdersByUserId(FAKE_USER_ID)).thenReturn(orderRecords);
+		Mockito.when(resourceUsageDataStore.getOrders(FAKE_USER_ID, FAKE_REQUESTING_MEMBER, FAKE_PROVIDING_MEMBER, COMPUTE_RESOURCE)).thenReturn(orderRecords);
 		
 		// exercise
-		List<Usage> usageResult = resourceUsageService.getUserUsage(FAKE_USER_ID, begin, end);
+		List<Usage> usageResult = resourceUsageService.getUsage(FAKE_USER_ID, FAKE_REQUESTING_MEMBER, FAKE_PROVIDING_MEMBER, COMPUTE_RESOURCE, begin, end);
 		
-		// verify compute usage
-		ComputeUsage computeUsage = (ComputeUsage) usageResult.get(0);
+		// verify usage
+		Usage usage = usageResult.get(0);
 		long expectedDuration = 172800000;
-		int expectedCPU = 2;
-		int expectedRAM = 4;
 		
-		Assert.assertEquals(FAKE_ORDER_ID, computeUsage.getOrderId());
-		Assert.assertEquals(FAKE_USER_ID, computeUsage.getUserId());
-		Assert.assertEquals(simpleDateFormat.parse(begin).getTime(), computeUsage.getBegin().getTime());
-		Assert.assertEquals(simpleDateFormat.parse(end).getTime(), computeUsage.getEnd().getTime());
-		Assert.assertEquals(expectedDuration, computeUsage.getDuration());
-		Assert.assertEquals(expectedCPU, computeUsage.getCpu());
-		Assert.assertEquals(expectedRAM, computeUsage.getRam());
-		
-		
-		// verify volume usage
-		VolumeUsage volumeUsage = (VolumeUsage) usageResult.get(1);
-		int expectedVolumeSize = 100;
-		
-		Assert.assertEquals(FAKE_ORDER_ID, volumeUsage.getOrderId());
-		Assert.assertEquals(FAKE_USER_ID, volumeUsage.getUserId());
-		Assert.assertEquals(simpleDateFormat.parse(begin).getTime(), volumeUsage.getBegin().getTime());
-		Assert.assertEquals(simpleDateFormat.parse(end).getTime(), volumeUsage.getEnd().getTime());
-		Assert.assertEquals(expectedDuration, volumeUsage.getDuration());
-		Assert.assertEquals(expectedVolumeSize, volumeUsage.getVolumeSize());
+		Assert.assertEquals(FAKE_ORDER_ID, usage.getOrderId());
+		Assert.assertEquals(FAKE_USER_ID, usage.getUserId());
+		Assert.assertEquals(simpleDateFormat.parse(begin).getTime(), usage.getBegin().getTime());
+		Assert.assertEquals(simpleDateFormat.parse(end).getTime(), usage.getEnd().getTime());
+		Assert.assertEquals(expectedDuration, usage.getDuration());
+		Assert.assertEquals(FAKE_REQUESTING_MEMBER, usage.getRequestingMember());
+		Assert.assertEquals(FAKE_PROVIDING_MEMBER, usage.getProvidingMember());
+		Assert.assertEquals(COMPUTE_RESOURCE, usage.getResourceType());
+		Assert.assertEquals(COMPUTE_SPEC, usage.getSpec());
+		Assert.assertEquals(FAKE_USER_ID, usage.getUserId());
 	}
 	
-	// test case: Test case: 
-	@Test(expected = UnexpectedException.class)
-	public void testGetUsageException() throws UnexpectedException, ParseException {
-		
+	// test case: Test case filtering order with duration equals to 0
+	public void testFilteringUsagesWithDurationEqualsTo0() throws UnexpectedException, ParseException {
 		// set up
+		
 		// Start time of order: 01/08/2018 00:00:00
 		Timestamp startTime = new Timestamp(new Long("1533092400000"));
-			
-		// duration: 2 days. So, the end time of order is: 03/08/2018 00:00:00
-		int duration = 172800000;
 				
+		// duration: 0. To force the filter
+		int duration = 0;
+						
 		// begin interested time: 01/08/2018 00:00:00 
-		//Timestamp begin = new Timestamp(new Long("1533092400000"));
 		String begin = "2018-08-01";
 		
 		// end interested time: 04/08/2018 00:00:00 
-		//Timestamp end = new Timestamp(new Long("1533095400000"));
 		String end = "2018-08-04";
-			
-		// set up
-		OrderRecord orderRecord = new OrderRecord(FAKE_ORDER_ID, NOT_ACCOUNTED_RESOURCE, COMPUTE_USAGE,
-				FAKE_USER_ID, FAKE_USER_NAME, FAKE_REQUESTING_MEMBER,
-				FAKE_PROVIDING_MEMBER, startTime, duration);
-				
-		List<OrderRecord> orderRecords = new ArrayList<>();
-		orderRecords.add(orderRecord);
 		
 		// set up
-		Mockito.when(resourceUsageDataStore.getOrdersByUserId(FAKE_USER_ID)).thenReturn(orderRecords);
+		OrderRecord computeOrderRecord1 = new OrderRecord(FAKE_ORDER_ID, COMPUTE_RESOURCE, COMPUTE_SPEC,
+						FAKE_USER_ID, FAKE_USER_NAME, FAKE_REQUESTING_MEMBER,
+						FAKE_PROVIDING_MEMBER, startTime, duration);
+		
+		List<OrderRecord> orderRecords = new ArrayList<>();
+		orderRecords.add(computeOrderRecord1);
+		
+		Mockito.when(resourceUsageDataStore.getOrders(FAKE_USER_ID, FAKE_REQUESTING_MEMBER, FAKE_PROVIDING_MEMBER, COMPUTE_RESOURCE)).thenReturn(orderRecords);
 		
 		// exercise
-		resourceUsageService.getUserUsage(FAKE_USER_ID, begin, end);
+		List<Usage> usageResult = resourceUsageService.getUsage(FAKE_USER_ID, FAKE_REQUESTING_MEMBER, FAKE_PROVIDING_MEMBER, COMPUTE_RESOURCE, begin, end);
+		
+		// verify usage
+		Assert.assertTrue(usageResult.isEmpty());
 	}
-	
-	
-	
-	
-	
-
 }

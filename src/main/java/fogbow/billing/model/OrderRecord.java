@@ -4,17 +4,17 @@ import java.sql.Timestamp;
 
 public class OrderRecord {
 
-	private String orderId, resourceType, usage, userId, userName, requestingMember, providingMember;	
+	private String orderId, resourceType, spec, userId, userName, requestingMember, providingMember;	
 	private Timestamp start_time;
 	private int duration;
 	
-	public OrderRecord(String orderId, String resourceType, String usage,
+	public OrderRecord(String orderId, String resourceType, String spec,
 			String userId, String userName, String requestingMember, String providingMember,
 			Timestamp startTime, int duration) {
 		
 		this.orderId = orderId;
 		this.resourceType = resourceType;
-		this.usage = usage;
+		this.spec = spec;
 		this.userId = userId;
 		this.userName = userName;
 		this.requestingMember = requestingMember;
@@ -39,12 +39,12 @@ public class OrderRecord {
 		this.resourceType = resourceType;
 	}
 
-	public String getUsage() {
-		return usage;
+	public String getSpec() {
+		return spec;
 	}
 
-	public void setUsage(String usage) {
-		this.usage = usage;
+	public void setSpec(String spec) {
+		this.spec = spec;
 	}
 
 	public String getUserId() {
@@ -97,7 +97,7 @@ public class OrderRecord {
 	
 	@Override
 	public String toString() {
-		return "OrderRecord [orderId=" + orderId + ", resourceType=" + resourceType + ", usage=" + usage
+		return "OrderRecord [orderId=" + orderId + ", resourceType=" + resourceType + ", usage=" + spec
 				+ ", userId=" + userId + ", userName=" + userName + ", requestingMember=" + requestingMember
 				+ ", providingMember=" + providingMember + ", start_time=" + start_time + ", duration=" + duration
 				+ "]";

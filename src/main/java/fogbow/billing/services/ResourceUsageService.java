@@ -9,14 +9,10 @@ import java.util.Date;
 import java.util.List;
 
 import org.fogbowcloud.ras.core.ApplicationFacade;
-import org.fogbowcloud.ras.core.exceptions.UnexpectedException;
-import org.fogbowcloud.ras.core.models.ResourceType;
 
 import fogbow.billing.datastore.ResourceUsageDataStore;
-import fogbow.billing.model.ComputeUsage;
 import fogbow.billing.model.OrderRecord;
 import fogbow.billing.model.Usage;
-import fogbow.billing.model.VolumeUsage;
 
 public class ResourceUsageService {
 	
@@ -40,69 +36,8 @@ public class ResourceUsageService {
         }
     }
     
-    public List<ComputeUsage> getUserComputeUsage(String userId, String beginPeriod, String endPeriod) throws ParseException{
-    	
-    	Date initalDate = simpleDateFormat.parse(beginPeriod);
-    	Timestamp begin = new Timestamp(initalDate.getTime());
-    	
-    	Date finalDate = simpleDateFormat.parse(endPeriod);
-    	Timestamp end = new Timestamp(finalDate.getTime());
-    	
-    	List<ComputeUsage> computeUsageList = new ArrayList<>();
-    	
-    	List<OrderRecord> listOfComputeOrders = this.resourceUsageDataStore.getOrdersByUserIdAndResourceType(userId, ResourceType.COMPUTE);
-    	
-    	for (OrderRecord entry: listOfComputeOrders) {
-    		
-    		String orderId = entry.getOrderId();
-    		String fedUserId = entry.getUserId();
-    		String usage = entry.getUsage();
-    		
-    		String[] resourceUsage = usage.split("/");
-    		int cpu = Integer.valueOf(resourceUsage[0]);
-    		int ram = Integer.valueOf(resourceUsage[1]);
-    		long realDuration = getRealDuration(entry, begin, end);
-    		
-    		ComputeUsage computeUsage = new ComputeUsage(orderId, fedUserId, begin, end, realDuration, cpu, ram);
-    		
-    		computeUsageList.add(computeUsage);
-    		
-    	}
-    	
-    	return computeUsageList;
-    }
-    
-    public List<VolumeUsage> getUserVolumeUsage(String userId, String beginPeriod, String endPeriod) throws ParseException{
-    	
-    	Date initalDate = simpleDateFormat.parse(beginPeriod);
-    	Timestamp begin = new Timestamp(initalDate.getTime());
-    	
-    	Date finalDate = simpleDateFormat.parse(endPeriod);
-    	Timestamp end = new Timestamp(finalDate.getTime());
-    	
-    	List<VolumeUsage> volumeUsageList = new ArrayList<>();
-    	
-    	List<OrderRecord> listOfVolumeOrders = this.resourceUsageDataStore.getOrdersByUserIdAndResourceType(userId, ResourceType.VOLUME);
-    	
-    	for (OrderRecord entry: listOfVolumeOrders) {
-    		
-    		String orderId = entry.getOrderId();
-    		String fedUserId = entry.getUserId();
-    		String usage = entry.getUsage();
-    	
-    		int volumeSize = Integer.valueOf(usage);
-    		long realDuration = getRealDuration(entry, begin, end);
-    		
-    		VolumeUsage volumeUsage = new VolumeUsage(orderId, fedUserId, begin, end, realDuration, volumeSize);
-    		
-    		volumeUsageList.add(volumeUsage);
-    		
-    	}
-    	
-    	return volumeUsageList;
-    }
-    
-    public List<Usage> getUserUsage(String userId, String beginPeriod, String endPeriod) throws UnexpectedException, ParseException{
+    public List<Usage> getUsage(String userId, String requestingMember, String providingMember,
+			String resourceType, String beginPeriod, String endPeriod) throws ParseException{
     	
     	Date initalDate = simpleDateFormat.parse(beginPeriod);
     	Timestamp begin = new Timestamp(initalDate.getTime());
@@ -112,55 +47,50 @@ public class ResourceUsageService {
     	
     	List<Usage> usageList = new ArrayList<>();
     	
-    	List<OrderRecord> listOfRecords = this.resourceUsageDataStore.getOrdersByUserId(userId);
+    	List<OrderRecord> listOfRecords = this.resourceUsageDataStore.getOrders(userId, requestingMember,
+    			providingMember, resourceType);
     	
     	for (OrderRecord record: listOfRecords) {	
     		Usage usage = processOrderRecord(record, begin, end);
-    		usageList.add(usage);
     		
+    		if (usage.getDuration() > 0) {
+        		usageList.add(usage);
+    		}		
     	} 	
     	return usageList;
     }
     
-    private Usage processOrderRecord(OrderRecord record, Timestamp begin, Timestamp end) throws UnexpectedException {
-    	
-    	Usage returnUsage;
-    	String orderId = record.getOrderId();
-		String fedUserId = record.getUserId();
-		String usage = record.getUsage();
+    private Usage processOrderRecord(OrderRecord record, Timestamp begin, Timestamp end) {
 
 		long realDuration = getRealDuration(record, begin, end);
-		System.out.println(record.getResourceType());
-		if (record.getResourceType().equals(String.valueOf(ResourceType.COMPUTE))) {
-			String[] resourceUsage = usage.split("/");
-    		int cpu = Integer.valueOf(resourceUsage[0]);
-    		int ram = Integer.valueOf(resourceUsage[1]);
-    		returnUsage = new ComputeUsage(orderId, fedUserId, begin, end, realDuration, cpu, ram);
 		
-		} else if (record.getResourceType().equals(String.valueOf(ResourceType.VOLUME))) {
-			int volumeSize = Integer.valueOf(usage);
-			returnUsage = new VolumeUsage(orderId, fedUserId, begin, end, realDuration, volumeSize);
-		} else {
-			throw new UnexpectedException("This type of resource is not ready to be accounted");
-		}
-		
-		return returnUsage;
+		return new Usage(record.getOrderId(), record.getUserId(), record.getUserName(), record.getRequestingMember(),
+				record.getProvidingMember(), record.getResourceType(), record.getSpec(), begin, end, realDuration);
 		
 	}
 
-	protected long getRealDuration(OrderRecord entry, Timestamp begin, Timestamp end) {
+	protected long getRealDuration(OrderRecord record, Timestamp begin, Timestamp end) {
     	
-    	long duration = entry.getDuration();
+    	long currentDuration = record.getDuration();
+    	
+    	// Order not closed, so the current duration of order is now - start_time
+    	if (currentDuration == ResourceUsageDataStore.ORDER_NOT_CLOSED_FLAG) {
+    		long now = new Date().getTime();
+    		currentDuration = now - record.getStart_time().getTime();
+    	}
+    	
+    	long newDuration = currentDuration;
 		
-		if (entry.getStart_time().before(begin)) {
-			duration -= begin.getTime() - entry.getStart_time().getTime();
+    	// Calculates the real duration, i.e when the order was fulfilled in interest interval.
+		if (record.getStart_time().before(begin)) {
+			newDuration -= begin.getTime() - record.getStart_time().getTime();
 		}
 		
-		if (end.getTime() < entry.getStart_time().getTime() + entry.getDuration()) {
-			duration -= (entry.getStart_time().getTime() + entry.getDuration()) - end.getTime();		
+		if (end.getTime() < record.getStart_time().getTime() + currentDuration) {
+			newDuration -= (record.getStart_time().getTime() + currentDuration) - end.getTime();		
 		}
 		
-		return Math.max(0,duration);
+		return Math.max(0,newDuration);
     }
     
     protected void setResourceUsageDataStore(ResourceUsageDataStore dataStore) {

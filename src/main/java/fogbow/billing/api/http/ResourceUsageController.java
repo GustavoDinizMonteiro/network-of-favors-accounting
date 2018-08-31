@@ -1,5 +1,6 @@
 package fogbow.billing.api.http;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -20,14 +21,31 @@ public class ResourceUsageController {
 	
 	public static final String USAGE_ENDPOINT = "usage";
 	
-	@RequestMapping(value = "/{federationUserId}/{initialPeriod}/{finalPeriod}", method = RequestMethod.GET)
+	@RequestMapping(value = "/{userId}/{requestingMember}/{providingMember}/{resourceType}/{initialDate}/{finalDate}", method = RequestMethod.GET)
     public ResponseEntity<List<Usage>> getResourceUsageFromUser(
-            @PathVariable String federationUserId, @PathVariable String initialPeriod, @PathVariable String finalPeriod)
+            @PathVariable String userId,
+            @PathVariable String requestingMember,
+            @PathVariable String providingMember,
+            @PathVariable String resourceType,
+            @PathVariable String initialDate,
+            @PathVariable String finalDate)
             throws Exception {
 		
-        List<Usage> listOfUsage = ResourceUsageService.getInstance().getUserUsage(federationUserId, initialPeriod, finalPeriod);
+		System.out.println("Entrei");
+        List<Usage> listOfUsage = ResourceUsageService.getInstance().getUsage(userId, 
+        		requestingMember, providingMember, resourceType, initialDate, finalDate);
 
-        return new ResponseEntity<List<Usage>>(listOfUsage, HttpStatus.OK);      
+        return new ResponseEntity<List<Usage>>(listOfUsage, HttpStatus.OK);        
+    
+    }
+	
+	@RequestMapping(value = "/", method = RequestMethod.GET)
+    public ResponseEntity<List<Usage>> getResourceUsage()
+            throws Exception {
+		
+      
+		System.out.println("entrei");
+        return new ResponseEntity<List<Usage>>(new ArrayList<>(), HttpStatus.OK);      
     }
 
 }

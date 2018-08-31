@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import org.fogbowcloud.ras.core.models.ResourceType;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -27,6 +26,14 @@ public class ResouceUsageDataStoreTest {
     
     private static Timestamp currentTimestamp = new Timestamp(new Date().getTime());
     private static final int duration = 1800;
+    
+    private static final String USER_ID_1 = "user-id-1";
+    private static final String USER_ID_2 = "user-id-2";
+    private static final String USER_NAME = "user-name";
+    private static final String REQUESTING_MEMBER = "requesting-member";
+    private static final String PROVIDING_MEMBER = "providing-member";
+    private static final String COMPUTE = "COMPUTE";
+    private static final String VOLUME = "VOLUME";
 
     private ResourceUsageDataStore resourceUsageDataStore;
     
@@ -50,26 +57,26 @@ public class ResouceUsageDataStoreTest {
     public void testInsertOrderRecords() throws SQLException {
     	
     	// set up
-    	OrderRecord computeOrderRecord1 = new OrderRecord("fake-id-1", "COMPUTE", "2/4", "user-id-1",
-    			"fake-user-name", "fake-requesting-member", "fake-providing-member", currentTimestamp,
+    	OrderRecord computeOrderRecord1 = new OrderRecord("fake-id-1", COMPUTE, "2/4", USER_ID_1,
+    			USER_NAME, REQUESTING_MEMBER, PROVIDING_MEMBER, currentTimestamp,
     			duration);
     	
-    	OrderRecord computeOrderRecord2 = new OrderRecord("fake-id-2", "COMPUTE", "4/6", "user-id-1",
-    			"fake-user-name", "fake-requesting-member", "fake-providing-member", currentTimestamp,
-    			duration);
-    	
-    	// different userId
-    	OrderRecord computeOrderRecord3 = new OrderRecord("fake-id-3", "COMPUTE", "4/6", "user-id-2",
-    			"fake-user-name", "fake-requesting-member", "fake-providing-member", currentTimestamp,
-    			duration);
-    	
-    	OrderRecord volumeOrderRecord1 = new OrderRecord("fake-id-4", "VOLUME", "100", "user-id-1",
-    			"fake-user-name", "fake-requesting-member", "fake-providing-member", currentTimestamp,
+    	OrderRecord computeOrderRecord2 = new OrderRecord("fake-id-2", COMPUTE, "4/6", USER_ID_1,
+    			"fake-user-name", REQUESTING_MEMBER, PROVIDING_MEMBER, currentTimestamp,
     			duration);
     	
     	// different userId
-    	OrderRecord volumeOrderRecord2 = new OrderRecord("fake-id-5", "VOLUME", "200", "user-id-2",
-    			"fake-user-name", "fake-requesting-member", "fake-providing-member", currentTimestamp,
+    	OrderRecord computeOrderRecord3 = new OrderRecord("fake-id-3", COMPUTE, "4/6", USER_ID_2,
+    			"fake-user-name", REQUESTING_MEMBER, PROVIDING_MEMBER, currentTimestamp,
+    			duration);
+    	
+    	OrderRecord volumeOrderRecord1 = new OrderRecord("fake-id-4", VOLUME, "100", USER_ID_1,
+    			"fake-user-name", REQUESTING_MEMBER, PROVIDING_MEMBER, currentTimestamp,
+    			duration);
+    	
+    	// different userId
+    	OrderRecord volumeOrderRecord2 = new OrderRecord("fake-id-5", VOLUME, "200", USER_ID_2,
+    			"fake-user-name", REQUESTING_MEMBER, PROVIDING_MEMBER, currentTimestamp,
     			duration);
     	
     	// exercise
@@ -77,40 +84,34 @@ public class ResouceUsageDataStoreTest {
     	resourceUsageDataStore.insertOrderRecord(computeOrderRecord2);
     	resourceUsageDataStore.insertOrderRecord(computeOrderRecord3);
     	resourceUsageDataStore.insertOrderRecord(volumeOrderRecord1);
-    	resourceUsageDataStore.insertOrderRecord(volumeOrderRecord2);
+    	resourceUsageDataStore.insertOrderRecord(volumeOrderRecord2);  	
     	
+    	// verify 
     	
-    	// verify user-id-1    	
-    	List<OrderRecord> listResultUser1 = resourceUsageDataStore.getOrdersByUserId("user-id-1");
-    	Assert.assertEquals(3, listResultUser1.size());
+    	// user-id-1 - compute    	
+    	List<OrderRecord> listResultUser1 = resourceUsageDataStore.getOrders(USER_ID_1, REQUESTING_MEMBER, PROVIDING_MEMBER, COMPUTE);
+    	Assert.assertEquals(2, listResultUser1.size());
     	Assert.assertEquals(computeOrderRecord1, listResultUser1.get(0));
     	Assert.assertEquals(computeOrderRecord2, listResultUser1.get(1));
-    	Assert.assertEquals(volumeOrderRecord1, listResultUser1.get(2));	
     	
-    	List<OrderRecord> listResultComputeOrderUser1 = resourceUsageDataStore.getOrdersByUserIdAndResourceType("user-id-1", ResourceType.COMPUTE);   	
-    	Assert.assertEquals(2, listResultComputeOrderUser1.size());
-    	Assert.assertEquals(computeOrderRecord1, listResultComputeOrderUser1.get(0));
-    	Assert.assertEquals(computeOrderRecord2, listResultComputeOrderUser1.get(1));
+    	// user-id-1 - volume
+    	List<OrderRecord> listResultUser1Volume = resourceUsageDataStore.getOrders(USER_ID_1, REQUESTING_MEMBER, PROVIDING_MEMBER, VOLUME);
+    	Assert.assertEquals(1, listResultUser1Volume.size());
+    	Assert.assertEquals(volumeOrderRecord1, listResultUser1Volume.get(0));
     	
-    	List<OrderRecord> listResultVolumeOrderUser1 = resourceUsageDataStore.getOrdersByUserIdAndResourceType("user-id-1", ResourceType.VOLUME);   	
-    	Assert.assertEquals(1, listResultVolumeOrderUser1.size());
-    	Assert.assertEquals(volumeOrderRecord1, listResultVolumeOrderUser1.get(0));
-    	
-    	
-    	// verify user-id-2
-    	List<OrderRecord> listResultUser2 = resourceUsageDataStore.getOrdersByUserId("user-id-2");
-    	Assert.assertEquals(2, listResultUser2.size());
+    	// user-id-2 - compute
+    	List<OrderRecord> listResultUser2 = resourceUsageDataStore.getOrders(USER_ID_2, REQUESTING_MEMBER, PROVIDING_MEMBER, COMPUTE);
+    	Assert.assertEquals(1, listResultUser2.size());
     	Assert.assertEquals(computeOrderRecord3, listResultUser2.get(0));
-    	Assert.assertEquals(volumeOrderRecord2, listResultUser2.get(1));
     	
-    	List<OrderRecord> listResultComputeOrderUser2 = resourceUsageDataStore.getOrdersByUserIdAndResourceType("user-id-2", ResourceType.COMPUTE);   	
-    	Assert.assertEquals(1, listResultComputeOrderUser2.size());
-    	Assert.assertEquals(computeOrderRecord3, listResultComputeOrderUser2.get(0));
-
-    	List<OrderRecord> listResultVolumeOrderUser2 = resourceUsageDataStore.getOrdersByUserIdAndResourceType("user-id-2", ResourceType.VOLUME);   	
-    	Assert.assertEquals(1, listResultVolumeOrderUser2.size());
-    	Assert.assertEquals(volumeOrderRecord2, listResultVolumeOrderUser2.get(0));
     	
+    	// user-id-2 - volume
+    	List<OrderRecord> listResultUser2Volume = resourceUsageDataStore.getOrders(USER_ID_2, REQUESTING_MEMBER, PROVIDING_MEMBER, VOLUME);
+    	Assert.assertEquals(1, listResultUser2Volume.size());
+    	Assert.assertEquals(volumeOrderRecord2, listResultUser2Volume.get(0));
+    	
+    	// checking inexistent order from inexistent requesting member
+    	Assert.assertTrue(resourceUsageDataStore.getOrders(USER_ID_2, "wrong-requesting-member", PROVIDING_MEMBER, COMPUTE).isEmpty());
     }
     
     
