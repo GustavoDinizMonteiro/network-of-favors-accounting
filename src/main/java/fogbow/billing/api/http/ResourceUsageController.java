@@ -1,6 +1,4 @@
 package fogbow.billing.api.http;
-
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -37,15 +35,6 @@ public class ResourceUsageController {
 
         return new ResponseEntity<List<Usage>>(listOfUsage, HttpStatus.OK);        
     
-    }
-	
-	@RequestMapping(value = "/", method = RequestMethod.GET)
-    public ResponseEntity<List<Usage>> getResourceUsage()
-            throws Exception {
-		
-      
-		System.out.println("entrei");
-        return new ResponseEntity<List<Usage>>(new ArrayList<>(), HttpStatus.OK);      
     }
 
 }
