@@ -1,4 +1,4 @@
-package fogbow.billing.services;
+package fogbow.billing.plugin.authorization.service;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;

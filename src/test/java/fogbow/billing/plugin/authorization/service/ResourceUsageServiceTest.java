@@ -1,4 +1,4 @@
-package fogbow.billing.services;
+package fogbow.billing.plugin.authorization.service;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -15,7 +15,7 @@ import org.mockito.Mockito;
 import fogbow.billing.datastore.ResourceUsageDataStore;
 import fogbow.billing.model.OrderRecord;
 import fogbow.billing.model.Usage;
-import fogbow.billing.services.ResourceUsageService;
+import fogbow.billing.plugin.authorization.service.ResourceUsageService;
 
 
 public class ResourceUsageServiceTest {

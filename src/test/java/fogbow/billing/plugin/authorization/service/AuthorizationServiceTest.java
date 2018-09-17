@@ -1,4 +1,4 @@
-package fogbow.billing.services;
+package fogbow.billing.plugin.authorization.service;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -10,7 +10,7 @@ import fogbow.billing.datastore.AuthDataStore;
 public class AuthorizationServiceTest {
 	
 	private AuthDataStore authDataStore;
-	private AuthorizationDirectoryServiceImpl authService;
+	private DefaultDistributedAuthorizationPluginServer authService;
 
 	private final static String TOKEN_PROVIDER = "fake-token-provider";
     private final static String USER_1 = "fake-id-1";
@@ -21,7 +21,7 @@ public class AuthorizationServiceTest {
     @Before
     public void setUp() {
     	
-    	authService = Mockito.spy(AuthorizationDirectoryServiceImpl.getInstance()); 	
+    	authService = Mockito.spy(DefaultDistributedAuthorizationPluginServer.getInstance());
     	authDataStore = Mockito.mock(AuthDataStore.class);
     	
         Mockito.when(authService.getAuthDataStore()).thenReturn(authDataStore);

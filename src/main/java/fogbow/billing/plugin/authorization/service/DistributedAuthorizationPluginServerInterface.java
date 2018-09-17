@@ -1,6 +1,6 @@
-package fogbow.billing.services;
+package fogbow.billing.plugin.authorization.service;
 
-public interface AuthorizationDirectoryService {
+public interface DistributedAuthorizationPluginServerInterface {
 	
 	public boolean getUserAuthorization(String tokenProvider, String userId, String resourceType, String operation);
 	

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import fogbow.billing.services.AuthorizationDirectoryServiceImpl;
+import fogbow.billing.plugin.authorization.service.DefaultDistributedAuthorizationPluginServer;
 
 @Controller
 @RestController
@@ -34,7 +34,7 @@ public class AuthorizationController {
 		
         LOGGER.info("Get authorization for federation user <" + tokenProvider + ":" + federationUserId + "> received.");
         
-        boolean result = AuthorizationDirectoryServiceImpl.getInstance().getUserAuthorization(tokenProvider,
+        boolean result = DefaultDistributedAuthorizationPluginServer.getInstance().getUserAuthorization(tokenProvider,
                 federationUserId, resourceType, operation);
 
         return new ResponseEntity<Boolean>(result, HttpStatus.OK);      
@@ -47,7 +47,7 @@ public class AuthorizationController {
 		
         LOGGER.info("Post federation user <" + federationUserId + "> received.");
         
-        boolean result = AuthorizationDirectoryServiceImpl.getInstance().addUser(federationUserId);
+        boolean result = DefaultDistributedAuthorizationPluginServer.getInstance().addUser(federationUserId);
         
         if (result) {
         	return new ResponseEntity<Boolean>(result, HttpStatus.OK);      
@@ -69,7 +69,7 @@ public class AuthorizationController {
 		
         LOGGER.info("Unauthorize federation user <" + tokenProvider + ":" + federationUserId + "> received.");
         
-        AuthorizationDirectoryServiceImpl.getInstance().unauthorizeUser(tokenProvider, federationUserId, resourceType, operation);
+        DefaultDistributedAuthorizationPluginServer.getInstance().unauthorizeUser(tokenProvider, federationUserId, resourceType, operation);
       
         return new ResponseEntity<Boolean>(true, HttpStatus.OK);      
         
@@ -87,7 +87,7 @@ public class AuthorizationController {
 		
         LOGGER.info("Authorize federation user <" + tokenProvider + ":" + federationUserId + "> received.");
         
-        AuthorizationDirectoryServiceImpl.getInstance().authorizeUser(tokenProvider, federationUserId, resourceType, operation);
+        DefaultDistributedAuthorizationPluginServer.getInstance().authorizeUser(tokenProvider, federationUserId, resourceType, operation);
        
         return new ResponseEntity<Boolean>(true, HttpStatus.OK);      
         

@@ -1,23 +1,23 @@
-package fogbow.billing.services;
+package fogbow.billing.plugin.authorization.service;
 import org.springframework.stereotype.Service;
 
 import fogbow.billing.datastore.AuthDataStore;
 
 @Service
-public class AuthorizationDirectoryServiceImpl implements AuthorizationDirectoryService {
+public class DefaultDistributedAuthorizationPluginServer implements DistributedAuthorizationPluginServerInterface {
 	
 	private AuthDataStore authDataStore;
 	
-	private static AuthorizationDirectoryServiceImpl instance;
+	private static DefaultDistributedAuthorizationPluginServer instance;
 	
-	private AuthorizationDirectoryServiceImpl() {
+	private DefaultDistributedAuthorizationPluginServer() {
 		this.authDataStore = new AuthDataStore();
 	}
 
-    public static AuthorizationDirectoryServiceImpl getInstance() {
-        synchronized (AuthorizationDirectoryServiceImpl.class) {
+    public static DefaultDistributedAuthorizationPluginServer getInstance() {
+        synchronized (DefaultDistributedAuthorizationPluginServer.class) {
             if (instance == null) {
-                instance = new AuthorizationDirectoryServiceImpl();
+                instance = new DefaultDistributedAuthorizationPluginServer();
             }
             return instance;
         }
@@ -57,8 +57,4 @@ public class AuthorizationDirectoryServiceImpl implements AuthorizationDirectory
     public AuthDataStore getAuthDataStore() {
     	return this.authDataStore;
     }
-    
-    
-	
-
 }

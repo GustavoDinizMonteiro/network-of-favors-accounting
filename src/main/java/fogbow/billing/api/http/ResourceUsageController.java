@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import fogbow.billing.model.Usage;
-import fogbow.billing.services.ResourceUsageService;
+import fogbow.billing.plugin.authorization.service.ResourceUsageService;
 
 @Controller
 @RestController
