@@ -24,7 +24,7 @@ public class AuthorizationDirectoryServiceImpl implements AuthorizationDirectory
     }
     
     @Override
-    public boolean getUserAuthorization(String userId, String resourceType, String operation) {
+    public boolean getUserAuthorization(String tokenProvider, String userId, String resourceType, String operation) {
     	int response = this.getAuthDataStore().getUserAuthorization(userId, resourceType, operation);
     	
     	if (response == 1) {
@@ -34,16 +34,16 @@ public class AuthorizationDirectoryServiceImpl implements AuthorizationDirectory
     }
     
     @Override
-    public boolean unauthorizeUser(String userId, String resourceType, String operation) {
-    	if (!getUserAuthorization(userId, resourceType, operation)) {
+    public boolean unauthorizeUser(String tokenProvider, String userId, String resourceType, String operation) {
+    	if (!getUserAuthorization(tokenProvider, userId, resourceType, operation)) {
     		return false;
     	}
     	return getAuthDataStore().unauthorizeUser(userId);
     }
     
     @Override
-    public boolean authorizeUser(String userId, String resourceType, String operation) {
-    	if (getUserAuthorization(userId, resourceType, operation)) {
+    public boolean authorizeUser(String tokenProvider, String userId, String resourceType, String operation) {
+    	if (getUserAuthorization(tokenProvider, userId, resourceType, operation)) {
     		return false;
     	}
     	
