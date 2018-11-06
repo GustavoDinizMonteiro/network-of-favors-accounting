@@ -70,16 +70,6 @@ public class AuthDataStore extends DataStore{
 	
 	}
 	
-	private boolean executionFailed(Connection connection, int[] executeBatch)
-			throws SQLException {
-		for (int i : executeBatch) {
-			if (i == PreparedStatement.EXECUTE_FAILED) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
 	public boolean addUser(String userId) {
 		
 		PreparedStatement insertMemberStatement = null;

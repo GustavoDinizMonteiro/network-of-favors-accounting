@@ -2,6 +2,7 @@ package fogbow.billing.datastore;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -29,6 +30,14 @@ public class DataStore {
 		}
 	}
 	
+	protected Connection getConnection(String databaseURL) throws SQLException {
+		try {
+			return DriverManager.getConnection(databaseURL);
+		} catch (SQLException e) {
+			throw e;
+		}
+	}
+	
 	protected void close(Statement statement, Connection conn) {
 		if (statement != null) {
 			try {
@@ -47,6 +56,16 @@ public class DataStore {
 			} catch (SQLException e) {
 			}
 		}
+	}
+	
+	protected boolean executionFailed(Connection connection, int[] executeBatch)
+			throws SQLException {
+		for (int i : executeBatch) {
+			if (i == PreparedStatement.EXECUTE_FAILED) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	protected String getDatabaseURL() {
