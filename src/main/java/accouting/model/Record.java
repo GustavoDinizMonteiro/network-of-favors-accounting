@@ -25,18 +25,6 @@ public class Record {
 	private String orderId;
 	
 	@Column(nullable = false)
-	private String resourceType;
-	
-	@Column(nullable = false)
-	private String spec;
-	
-	@Column(nullable = false)
-	private String userId;
-	
-	@Column(nullable = false)
-	private String userName;
-	
-	@Column(nullable = false)
 	private String requestingMember;
 	
 	@Column(nullable = false)
@@ -48,13 +36,8 @@ public class Record {
 	@Column(nullable = false)
 	private int duration;
 
-	public Record(String orderId, String resourceType, String spec, String userId, String userName,
-			String requestingMember, String providingMember, Long startTime) {
+	public Record(String orderId, String requestingMember, String providingMember, Long startTime) {
 		this.orderId = orderId;
-		this.resourceType = resourceType;
-		this.spec = spec;
-		this.userId = userId;
-		this.userName = userName;
 		this.requestingMember = requestingMember;
 		this.providingMember = providingMember;
 		this.startTime = startTime;

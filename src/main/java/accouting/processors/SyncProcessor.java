@@ -64,9 +64,8 @@ public class SyncProcessor implements Runnable {
 	}
 	
 	private Record extractRecord(ResultSet rs) throws SQLException {
-		return new Record(rs.getString("orderId"), rs.getString("resourceType"),
-				rs.getString("spec"), rs.getString("userId"), rs.getString("userName"),
-				rs.getString("requestingMember"), rs.getString("providingMember"), rs.getLong("startTime"));
+		return new Record(rs.getString("orderId"),rs.getString("requestingMember"), 
+					rs.getString("providingMember"), rs.getLong("startTime"));
 	}
 
 }
