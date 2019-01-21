@@ -14,24 +14,29 @@ import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 
 import accouting.datastore.RecordRepository;
 import accouting.model.Record;
+import io.github.cdimascio.dotenv.Dotenv;
 
 public class SyncProcessor implements Runnable {
-	private static final int SLEEP_TIME = 3600000; // One hour
+	private Integer sleepTime;
 	private static final Logger logger = LoggerFactory.getLogger(SyncProcessor.class);
 	
+	private String jdbcUrl;
+	private String username;
+	private String password;
 	private JdbcTemplate jdbcTemplate;
-	
-	private String jdbcUrl = "jdbc:postgresql://localhost:5432/accounting";
-	
-	private String username = "accounting";
-	
-	private String password = "accounting";
 
 	@Autowired
 	private RecordRepository recordRepository;
 	
 	public SyncProcessor() {
 	    Driver driver = new Driver();
+	    Dotenv dotenv = Dotenv.load();
+	    
+	    this.jdbcUrl = dotenv.get("URL");
+	    this.username = dotenv.get("USERNAME");
+	    this.password = dotenv.get("PASSWORD");
+	    this.sleepTime = Integer.parseInt(dotenv.get("SLEEP_TIME"));
+	    
 	    DataSource dataSource = new SimpleDriverDataSource(driver, jdbcUrl, username, password);
 	    this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
@@ -43,10 +48,9 @@ public class SyncProcessor implements Runnable {
 			logger.info("Updating tables.");
 			try {
 				this.retriveAndSave();
-				
 				logger.info("Finish updating.");
 				
-				Thread.sleep(SLEEP_TIME);
+				Thread.sleep(sleepTime);
 			} catch (InterruptedException e) {
 				logger.info("Problem on updating records.");
 				isActive = false;

@@ -8,7 +8,3 @@ spring:
       url: jdbc:postgresql://localhost:5432/accounting
       username: accounting
       password: accounting
-jdbc:
-  url: jdbc:postgresql://localhost:5432/accounting
-  username: accounting
-  password: accounting
