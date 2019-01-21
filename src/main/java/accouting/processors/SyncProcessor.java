@@ -41,7 +41,6 @@ public class SyncProcessor implements Runnable {
 	    this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 
-	@Override
 	public void run() {		
 		Boolean isActive = true;
 		while(isActive) {			
